@@ -1,98 +1,93 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import Libro from "../models/Libro";
+import LibroService from "../services/LibroService";
 
 export default function HomeScreen() {
+  const [servicio] = useState(() => new LibroService());
+  const [libros, setLibros] = useState<Libro[]>([]);
+  const [titulo, setTitulo] = useState("");
+  const [autor, setAutor] = useState("");
+  const [anio, setAnio] = useState("");
+
+  function manejarAgregar() {
+    if (titulo === "" || autor === "" || anio === "") {
+      return;
+    }
+    servicio.agregarLibro(titulo, autor, Number(anio));
+    setLibros([...servicio.obtenerLibros()]);
+    setTitulo("");
+    setAutor("");
+    setAnio("");
+  }
+
+  function manejarEliminar(id: number) {
+    servicio.eliminarLibro(id);
+    setLibros([...servicio.obtenerLibros()]);
+  }
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <View style={estilos.contenedor}>
+      <Text style={estilos.titulo}>Mis Libros</Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <TextInput
+        style={estilos.input}
+        placeholder="Título"
+        value={titulo}
+        onChangeText={setTitulo}
+      />
+      <TextInput
+        style={estilos.input}
+        placeholder="Autor"
+        value={autor}
+        onChangeText={setAutor}
+      />
+      <TextInput
+        style={estilos.input}
+        placeholder="Año"
+        value={anio}
+        onChangeText={setAnio}
+        keyboardType="numeric"
+      />
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      <Pressable style={estilos.boton} onPress={manejarAgregar}>
+        <Text style={estilos.textoBoton}>Agregar libro</Text>
+      </Pressable>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      {libros.map((libro) => (
+        <View key={libro.id} style={estilos.fila}>
+          <Text style={estilos.textoLibro}>{libro.mostrarInformacion()}</Text>
+          <Pressable onPress={() => manejarEliminar(libro.id)}>
+            <Text style={estilos.eliminar}>Eliminar</Text>
+          </Pressable>
+        </View>
+      ))}
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+const estilos = StyleSheet.create({
+  contenedor: { flex: 1, padding: 20, backgroundColor: "#1E1E2E" },
+  titulo: { fontSize: 24, color: "#61DAFB", marginBottom: 20 },
+  input: {
+    backgroundColor: "#2A2A3C",
+    color: "white",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 6,
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  boton: {
+    backgroundColor: "#61DAFB",
+    padding: 12,
+    borderRadius: 6,
+    marginBottom: 20,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  textoBoton: { color: "#1E1E2E", textAlign: "center", fontWeight: "bold" },
+  fila: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  textoLibro: { color: "white" },
+  eliminar: { color: "#FF6B6B" },
 });
