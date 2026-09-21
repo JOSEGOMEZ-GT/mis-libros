@@ -18,3 +18,23 @@ Representar los datos y el comportamiento de un solo libro.
 ## Captura de la aplicación
 
 ![Captura](Captura.png.png)
+
+## Cambios — Repository y Singleton
+
+Se agregó la clase `LibroRepository`, encargada de administrar la colección
+de libros (antes esa responsabilidad la tenía `LibroService`). `LibroService`
+ahora delega en `LibroRepository` las operaciones de agregar, eliminar y
+obtener libros.
+
+`LibroRepository` implementa el patrón Singleton: su constructor es privado
+y solo se puede obtener una instancia a través de `LibroRepository.getInstance()`.
+Se comprobó en la consola del navegador que dos llamadas a `getInstance()`
+devuelven la misma instancia.
+
+### Captura de la app funcionando
+
+![captura app](capt2.png)
+
+### Captura de la prueba del Singleton
+
+![captura singleton](capt1.png)

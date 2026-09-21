@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import Libro from "../models/Libro";
+import LibroRepository from "../repositories/LibroRepository";
 import LibroService from "../services/LibroService";
 
 export default function HomeScreen() {
@@ -9,6 +10,11 @@ export default function HomeScreen() {
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
   const [anio, setAnio] = useState("");
+  useEffect(() => {
+    const instancia1 = LibroRepository.getInstance();
+    const instancia2 = LibroRepository.getInstance();
+    console.log("¿Son la misma instancia?", instancia1 === instancia2);
+  }, []);
 
   function manejarAgregar() {
     if (titulo === "" || autor === "" || anio === "") {
