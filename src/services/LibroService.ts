@@ -8,15 +8,19 @@ class LibroService {
     this.repositorio = LibroRepository.getInstance();
   }
 
-  agregarLibro(titulo: string, autor: string, anio: number): Libro {
+  async agregarLibro(
+    titulo: string,
+    autor: string,
+    anio: number,
+  ): Promise<Libro> {
     return this.repositorio.agregarLibro(titulo, autor, anio);
   }
 
-  eliminarLibro(id: number): void {
-    this.repositorio.eliminarLibro(id);
+  async eliminarLibro(id: number): Promise<void> {
+    return this.repositorio.eliminarLibro(id);
   }
 
-  obtenerLibros(): Libro[] {
+  async obtenerLibros(): Promise<Libro[]> {
     return this.repositorio.obtenerLibros();
   }
 }

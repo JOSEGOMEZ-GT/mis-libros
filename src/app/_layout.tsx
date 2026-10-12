@@ -1,18 +1,56 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import type { Session } from "@supabase/supabase-js";
+import { Stack } from "expo-router";
+import { useEffect, useState } from "react";
+import { Text, View } from "react-native";
+import AuthService from "../services/AuthService";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+const authService = new AuthService();
 
-SplashScreen.preventAutoHideAsync();
+export default function RootLayout() {
+  const [sesion, setSesion] = useState<Session | null>(null);
+  const [cargando, setCargando] = useState(true);
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    // 1. Leer la sesión guardada (si el usuario ya había iniciado sesión antes)
+    authService.obtenerSesion().then((sesionGuardada) => {
+      setSesion(sesionGuardada);
+      setCargando(false);
+    });
+
+    // 2. Escuchar cambios: login, logout, registro...
+    const dejarDeEscuchar = authService.escucharCambios((nuevaSesion) => {
+      setSesion(nuevaSesion);
+    });
+
+    // 3. Limpieza (igual que clearInterval en la Clase 5)
+    return dejarDeEscuchar;
+  }, []);
+
+  if (cargando) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#1E1E2E",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={{ color: "#61DAFB", textAlign: "center" }}>
+          Cargando...
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={sesion !== null}>
+        <Stack.Screen name="(app)" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={sesion === null}>
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+    </Stack>
   );
 }

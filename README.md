@@ -1,40 +1,40 @@
-# Welcome to your Expo app 👋
+## Supabase y Autenticación
 
-# Mis Libros
+Los libros ahora se almacenan en una tabla `libros` en Supabase (id, titulo,
+autor, anio). `LibroRepository` (Singleton) obtiene, agrega y elimina libros en
+Supabase; `LibroService` delega en él. `AuthService` encapsula el registro, el
+inicio y el cierre de sesión con Supabase Auth. La navegación depende de la
+sesión: sin sesión solo existen las pantallas de Login/Registro, y con sesión
+solo existe Home.
 
-Aplicación en React Native + TypeScript para agregar, listar y eliminar libros.
+### Configuración
 
-## Reflexión
+1. Crear un proyecto en Supabase y ejecutar `supabase/setup.sql` en el SQL Editor.
+2. Copiar `.env.example` a `.env` y completar la URL y la clave publicable.
+3. `npm install` y `npm run web`.
 
-**¿Por qué es conveniente separar la lógica de los libros de App.tsx?**
-Se hace para tener una mejor estructura y hacer el codigo mas manejable, ya que al hacer cambios la logica no afecta a interfaz de la pantalla y previene trabajo adicional o errores en la interfaz
+### ¿Cómo se relaciona la autenticación con el acceso a los datos?
 
-**¿Qué responsabilidad tiene LibroService?**
-Guardar la lista de libros y ofrecer las operaciones sobre ella (agregar, eliminar, obtener).
+(Explícalo con tus palabras. Ideas: la autenticación responde "¿quién eres?";
+al iniciar sesión, cada petición a Supabase viaja con un token y la base de
+datos la trata como el rol `authenticated`; sin sesión es el rol `anon`.
+GRANT decide qué operaciones puede hacer un rol sobre la tabla (aquí solo
+`authenticated` tiene select, insert y delete). RLS decide sobre qué filas
+puede actuar; las políticas que creé permiten consultar, agregar y eliminar
+a los usuarios autenticados. Sin GRANT la consulta falla por permisos; sin
+política RLS la tabla parece vacía o no se elimina nada; sin sesión no se
+accede a los libros.)
 
-**¿Qué responsabilidad tiene la clase Libro?**
-Representar los datos y el comportamiento de un solo libro.
+### Capturas
 
-## Captura de la aplicación
+**Registro**
+![registro](registro.png)
 
-![Captura](Captura.png.png)
+**Login**
+![login](login.png)
 
-## Cambios — Repository y Singleton
+**Libros almacenados en Supabase**
+![libros](sesion1.png)
 
-Se agregó la clase `LibroRepository`, encargada de administrar la colección
-de libros (antes esa responsabilidad la tenía `LibroService`). `LibroService`
-ahora delega en `LibroRepository` las operaciones de agregar, eliminar y
-obtener libros.
-
-`LibroRepository` implementa el patrón Singleton: su constructor es privado
-y solo se puede obtener una instancia a través de `LibroRepository.getInstance()`.
-Se comprobó en la consola del navegador que dos llamadas a `getInstance()`
-devuelven la misma instancia.
-
-### Captura de la app funcionando
-
-![captura app](capt2.png)
-
-### Captura de la prueba del Singleton
-
-![captura singleton](capt1.png)
+**Cierre de sesión**
+![sesión](sesion2.png)
